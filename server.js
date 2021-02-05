@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const NewsAPI = require("newsapi");
-const newsapi = new NewsAPI("b74d7bc36bb7449b8e3f85210dc17061");
+const newsapi = new NewsAPI("56ebe961104d4ef4a60e4586250e11b7");
 const server = new express();
 const fs = require("fs");
 
@@ -12,8 +12,6 @@ server.use(
 );
 server.use(bodyParser.json());
 
-//POSTMAN => GET METHOD =>
-//localhost:3000/newsapi?q=tesla&from=2021-02-02&sortBy=publishedAt
 server.get("/newsapi", function (req, res) {
   const query = req.query;
   let localData = [];
@@ -30,7 +28,6 @@ server.get("/newsapi", function (req, res) {
       }
       if (localData.length) {
         console.log("Data from saved local file data.json:", localData);
-        //res.json(localData);
         let responseToSend = {
           messages: [
             { "Data from saved local file data.json:": localData },
@@ -53,6 +50,20 @@ server.get("/newsapi", function (req, res) {
                 `Shown ${response.articles.length} articles from ${response.totalResults}`
               );
               response.query = req.query;
+              const today = new Date();
+              const date =
+                today.getFullYear() +
+                "-" +
+                (today.getMonth() + 1) +
+                "-" +
+                today.getDate();
+              const time =
+                today.getHours() +
+                ":" +
+                today.getMinutes() +
+                ":" +
+                today.getSeconds();
+              const dateTime = date + " " + time;
               if (response.status === "ok" && response.articles.length > 0) {
                 const articles = response.articles.map((article) => {
                   return {
@@ -64,6 +75,7 @@ server.get("/newsapi", function (req, res) {
                       urlToImage: article.urlToImage,
                       publishedAt: article.publishedAt,
                       query: response.query,
+                      timestamp: dateTime,
                     },
                   };
                 });
@@ -81,7 +93,6 @@ server.get("/newsapi", function (req, res) {
                   ],
                 };
                 return res.json(responseToSend);
-                //return res.json(articles);
               } else {
                 return res.json({ message: `No articles for ${query}.` });
               }
@@ -102,6 +113,6 @@ server.get("/newsapi", function (req, res) {
 });
 
 const port = process.env.PORT || 3000;
-server.listen(port, function () {
+server.listen(port, () => {
   console.log(`Server is up and running on port ${port}...`);
 });
